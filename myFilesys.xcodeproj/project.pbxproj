@@ -8,6 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		7D7607791CAC2BC800EC001B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607781CAC2BC800EC001B /* main.cpp */; };
+		7D7607811CAC2BF900EC001B /* Inode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D76077F1CAC2BF900EC001B /* Inode.cpp */; };
+		7D7607851CAC348900EC001B /* IOCS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607831CAC348900EC001B /* IOCS.cpp */; };
+		7D7607881CAC59DF00EC001B /* DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607861CAC59DF00EC001B /* DataBlock.cpp */; };
+		7D76078B1CAC5C7700EC001B /* FSManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607891CAC5C7700EC001B /* FSManager.cpp */; };
+		7D7607911CAC616C00EC001B /* VCB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D76078F1CAC616C00EC001B /* VCB.cpp */; };
+		7D7607951CAC641100EC001B /* FreeBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607931CAC641100EC001B /* FreeBlock.cpp */; };
+		7D7607981CAC675100EC001B /* IndirectBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607961CAC675100EC001B /* IndirectBlock.cpp */; };
+		7D76079B1CAC6F3200EC001B /* DirentBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607991CAC6F3200EC001B /* DirentBlock.cpp */; };
+		7D8B306D1CBD965E00ADECD2 /* CatalogFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D8B306B1CBD965E00ADECD2 /* CatalogFile.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +34,25 @@
 /* Begin PBXFileReference section */
 		7D7607751CAC2BC800EC001B /* myFilesys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = myFilesys; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D7607781CAC2BC800EC001B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7D76077F1CAC2BF900EC001B /* Inode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Inode.cpp; sourceTree = "<group>"; };
+		7D7607801CAC2BF900EC001B /* Inode.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Inode.hpp; sourceTree = "<group>"; };
+		7D7607821CAC2CDF00EC001B /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		7D7607831CAC348900EC001B /* IOCS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOCS.cpp; sourceTree = "<group>"; };
+		7D7607841CAC348900EC001B /* IOCS.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IOCS.hpp; sourceTree = "<group>"; };
+		7D7607861CAC59DF00EC001B /* DataBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataBlock.cpp; sourceTree = "<group>"; };
+		7D7607871CAC59DF00EC001B /* DataBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DataBlock.hpp; sourceTree = "<group>"; };
+		7D7607891CAC5C7700EC001B /* FSManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSManager.cpp; sourceTree = "<group>"; };
+		7D76078A1CAC5C7700EC001B /* FSManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FSManager.hpp; sourceTree = "<group>"; };
+		7D76078F1CAC616C00EC001B /* VCB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VCB.cpp; sourceTree = "<group>"; };
+		7D7607901CAC616C00EC001B /* VCB.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VCB.hpp; sourceTree = "<group>"; };
+		7D7607931CAC641100EC001B /* FreeBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FreeBlock.cpp; sourceTree = "<group>"; };
+		7D7607941CAC641100EC001B /* FreeBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FreeBlock.hpp; sourceTree = "<group>"; };
+		7D7607961CAC675100EC001B /* IndirectBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndirectBlock.cpp; sourceTree = "<group>"; };
+		7D7607971CAC675100EC001B /* IndirectBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IndirectBlock.hpp; sourceTree = "<group>"; };
+		7D7607991CAC6F3200EC001B /* DirentBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirentBlock.cpp; sourceTree = "<group>"; };
+		7D76079A1CAC6F3200EC001B /* DirentBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DirentBlock.hpp; sourceTree = "<group>"; };
+		7D8B306B1CBD965E00ADECD2 /* CatalogFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CatalogFile.cpp; sourceTree = "<group>"; };
+		7D8B306C1CBD965E00ADECD2 /* CatalogFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CatalogFile.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,9 +85,36 @@
 		7D7607771CAC2BC800EC001B /* myFilesys */ = {
 			isa = PBXGroup;
 			children = (
+				7D7607921CAC63A400EC001B /* Blocks */,
 				7D7607781CAC2BC800EC001B /* main.cpp */,
+				7D7607821CAC2CDF00EC001B /* Constants.h */,
+				7D7607831CAC348900EC001B /* IOCS.cpp */,
+				7D7607841CAC348900EC001B /* IOCS.hpp */,
+				7D7607891CAC5C7700EC001B /* FSManager.cpp */,
+				7D76078A1CAC5C7700EC001B /* FSManager.hpp */,
+				7D8B306B1CBD965E00ADECD2 /* CatalogFile.cpp */,
+				7D8B306C1CBD965E00ADECD2 /* CatalogFile.hpp */,
 			);
 			path = myFilesys;
+			sourceTree = "<group>";
+		};
+		7D7607921CAC63A400EC001B /* Blocks */ = {
+			isa = PBXGroup;
+			children = (
+				7D76077F1CAC2BF900EC001B /* Inode.cpp */,
+				7D7607801CAC2BF900EC001B /* Inode.hpp */,
+				7D76078F1CAC616C00EC001B /* VCB.cpp */,
+				7D7607901CAC616C00EC001B /* VCB.hpp */,
+				7D7607861CAC59DF00EC001B /* DataBlock.cpp */,
+				7D7607871CAC59DF00EC001B /* DataBlock.hpp */,
+				7D7607931CAC641100EC001B /* FreeBlock.cpp */,
+				7D7607941CAC641100EC001B /* FreeBlock.hpp */,
+				7D7607961CAC675100EC001B /* IndirectBlock.cpp */,
+				7D7607971CAC675100EC001B /* IndirectBlock.hpp */,
+				7D7607991CAC6F3200EC001B /* DirentBlock.cpp */,
+				7D76079A1CAC6F3200EC001B /* DirentBlock.hpp */,
+			);
+			name = Blocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -118,7 +173,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D7607851CAC348900EC001B /* IOCS.cpp in Sources */,
+				7D7607881CAC59DF00EC001B /* DataBlock.cpp in Sources */,
 				7D7607791CAC2BC800EC001B /* main.cpp in Sources */,
+				7D8B306D1CBD965E00ADECD2 /* CatalogFile.cpp in Sources */,
+				7D7607951CAC641100EC001B /* FreeBlock.cpp in Sources */,
+				7D7607811CAC2BF900EC001B /* Inode.cpp in Sources */,
+				7D7607911CAC616C00EC001B /* VCB.cpp in Sources */,
+				7D7607981CAC675100EC001B /* IndirectBlock.cpp in Sources */,
+				7D76079B1CAC6F3200EC001B /* DirentBlock.cpp in Sources */,
+				7D76078B1CAC5C7700EC001B /* FSManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +303,7 @@
 				7D76077E1CAC2BC800EC001B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
