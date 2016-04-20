@@ -29,20 +29,22 @@ public:
     Inode* rootDirInode;
     std::map<std::string, Inode*> fileTable;
     
-    void mount(std::string volumeName);
     void create(std::string volumeName, size_t size);
+    void mount(std::string volumeName);
     void unmount();
     
-    FILE* createFile(std::string path);
+    void createFile(std::string path);
     FILE* openFile(std::string path);
     void closeFile(std::string path);
     bool writeFile(std::string sourcePath, std::string destPath);
-    void deleteFile(std::string path);
+    void readFile(std::string path);
+    void deleteFile(std::string path, Inode* dirInode);
     
     void createDirectory(std::string path);
+    void list(std::string path);
     
 private:
-    FILE* createInode(std::string path, bool isDirectory);
+    void createInode(std::string path, bool isDirectory);
 };
 
 #endif /* IOCS_hpp */

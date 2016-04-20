@@ -49,7 +49,11 @@ public:
     blocknum_t* nextFreeBlockPtr();
     void setBlockPtr(blocknum_t blocknum, unsigned int withNumber);
     bool writeData(FILE* fromFile);
+    void readData();
     void deleteData(bool shouldDeleteEntry);
+    
+private:
+    int32_t _lastBlockSize;
 };
 
 #endif /* Inode_hpp */

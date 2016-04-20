@@ -6,6 +6,7 @@
 //  Copyright © 2016 Connor Crawford. All rights reserved.
 //
 
+#include <unistd.h>
 #include "Inode.hpp"
 #include "IOCS.hpp"
 
@@ -20,108 +21,83 @@ isDir(false)
 
 Inode::Inode(unsigned int number) {
     blocknum_t inodePointer;
+    FILE* volumeFile;
+    
     inodePointer = *IOCS::sharedInstance->catalogFileInode->blockPtrWithNumber(number);
+    volumeFile = IOCS::sharedInstance->volumeFile;
     
     // Go to inode's block
-    fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(inodePointer.block*BLOCK_SIZE), SEEK_SET);
+    fseek(volumeFile, DATA_OFFSET+(inodePointer.block*BLOCK_SIZE), SEEK_SET);
     
     // Set instance variables to data stored on disk
-    fread(&(this->number), sizeof(this->number), 1, IOCS::sharedInstance->volumeFile);
-    fread(&links, sizeof(links), 1, IOCS::sharedInstance->volumeFile);
-    fread(&blocks, sizeof(blocks), 1, IOCS::sharedInstance->volumeFile);
-    fread(&isDir, sizeof(isDir), 1, IOCS::sharedInstance->volumeFile);
-    fread(&cTime, sizeof(cTime), 1, IOCS::sharedInstance->volumeFile);
-    fread(&mTime, sizeof(mTime), 1, IOCS::sharedInstance->volumeFile);
-    fread(&aTime, sizeof(aTime), 1, IOCS::sharedInstance->volumeFile);
-    for (int i = 0; i < 12; i++) {
-        fread(&directBlocks[i], sizeof(blocknum_t), 1, IOCS::sharedInstance->volumeFile);
-    }
-    fread(&indirectBlock, sizeof(indirectBlock), 1, IOCS::sharedInstance->volumeFile);
-    fread(&dIndirectBlock, sizeof(dIndirectBlock), 1, IOCS::sharedInstance->volumeFile);
-    fread(&tIndirectBlock, sizeof(tIndirectBlock), 1, IOCS::sharedInstance->volumeFile);
+    fread(&(this->number), sizeof(this->number), 1, volumeFile);
+    fread(&links, sizeof(links), 1, volumeFile);
+    fread(&blocks, sizeof(blocks), 1, volumeFile);
+    fread(&isDir, sizeof(isDir), 1, volumeFile);
+    fread(&cTime, sizeof(cTime), 1, volumeFile);
+    fread(&mTime, sizeof(mTime), 1, volumeFile);
+    fread(&aTime, sizeof(aTime), 1, volumeFile);
+    
+    fread(directBlocks, sizeof(blocknum_t), 12, volumeFile);
+    fread(&indirectBlock, sizeof(indirectBlock), 1, volumeFile);
+    fread(&dIndirectBlock, sizeof(dIndirectBlock), 1, volumeFile);
+    fread(&tIndirectBlock, sizeof(tIndirectBlock), 1, volumeFile);
+    fread(&_lastBlockSize, sizeof(_lastBlockSize), 1, volumeFile);
 }
 
 
 FILE* Inode::open(std::string name) {
     char buffer[512];
-    FILE *outFile = fopen(name.c_str(), "w+");
+    FILE *outFile = fopen(name.c_str(), "wb+");
     int i = 0;
     size_t read;
     while (blockPtrWithNumber(i)->valid) {
         fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(blockPtrWithNumber(i)->block*BLOCK_SIZE), SEEK_SET);
         
-        read = fread(buffer, 1, BLOCK_SIZE, IOCS::sharedInstance->volumeFile);
-        if (read > 0) { // Read from drive to buffer
+        if (i < blocks - 1) {
+            read = fread(buffer, 1, BLOCK_SIZE, IOCS::sharedInstance->volumeFile); // Read from drive to buffer
+        } else {
+            // Last segement of data that may not be the full block size, write only used data
+            read = fread(buffer, 1, _lastBlockSize, IOCS::sharedInstance->volumeFile);
+        }
+        
+        if (read > 0) {
             fwrite(buffer, 1, read, outFile); // Write from buffer to out file if able to read at least one byte
-            if (read < BLOCK_SIZE) {
-                printf("a");
-            }
         }
         i++;
+        
+    }
+    if (i == 0) {
+        return NULL;
     }
     
+    fflush(outFile);
     return outFile;
 }
 
 void Inode::write() {
-    
     blocknum_t inodePointer;
+    FILE* volumeFile;
+    
     inodePointer = *IOCS::sharedInstance->catalogFileInode->blockPtrWithNumber(number);
+    volumeFile = IOCS::sharedInstance->volumeFile;
     
     // Go to inode's block
-    fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(inodePointer.block*BLOCK_SIZE), SEEK_SET);
+    fseek(volumeFile, DATA_OFFSET+(inodePointer.block*BLOCK_SIZE), SEEK_SET);
     
     // Set instance variables to data stored on disk
-    fwrite(&(this->number), sizeof(this->number), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&links, sizeof(links), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&blocks, sizeof(blocks), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&isDir, sizeof(isDir), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&cTime, sizeof(cTime), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&mTime, sizeof(mTime), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&aTime, sizeof(aTime), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(directBlocks, sizeof(blocknum_t), 12, IOCS::sharedInstance->volumeFile);
-    fwrite(&indirectBlock, sizeof(indirectBlock), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&dIndirectBlock, sizeof(dIndirectBlock), 1, IOCS::sharedInstance->volumeFile);
-    fwrite(&tIndirectBlock, sizeof(tIndirectBlock), 1, IOCS::sharedInstance->volumeFile);
-    
-//    char zero = 0;
-//    for (int i = 0; i < 1; i++) {
-//        fwrite(&zero, 1, 1, IOCS::sharedInstance->volumeFile);
-//    }
-    
-    
-//    if (indirectBlock.valid) {
-//        IndirectBlock ib(indirectBlock);
-//        ib.write();
-//    }
-//    
-//    if (dIndirectBlock.valid) {
-//        IndirectBlock dIb(dIndirectBlock);
-//        dIb.write();
-//        for (int i = 0; i < 128; i++) {
-//            if (dIb.blocks[i].valid) {
-//                IndirectBlock ib(dIb.blocks[i]);
-//                ib.write();
-//            }
-//        }
-//    }
-//    if (tIndirectBlock.valid) {
-//        IndirectBlock tIb(tIndirectBlock);
-//        tIb.write();
-//        for (int i = 0; i < 128; i++) {
-//            if (tIb.blocks[i].valid) {
-//                IndirectBlock dIb(tIb.blocks[i]);
-//                dIb.write();
-//                for (int j = 0; j < 128; j++) {
-//                    if (dIb.blocks[j].valid) {
-//                        IndirectBlock ib(dIb.blocks[j]);
-//                        ib.write();
-//                    }
-//                }
-//            }
-//        }
-//    }
-    
+    fwrite(&(this->number), sizeof(this->number), 1, volumeFile);
+    fwrite(&links, sizeof(links), 1, volumeFile);
+    fwrite(&blocks, sizeof(blocks), 1, volumeFile);
+    fwrite(&isDir, sizeof(isDir), 1, volumeFile);
+    fwrite(&cTime, sizeof(cTime), 1, volumeFile);
+    fwrite(&mTime, sizeof(mTime), 1, volumeFile);
+    fwrite(&aTime, sizeof(aTime), 1, volumeFile);
+    fwrite(directBlocks, sizeof(blocknum_t), 12, volumeFile);
+    fwrite(&indirectBlock, sizeof(indirectBlock), 1, volumeFile);
+    fwrite(&dIndirectBlock, sizeof(dIndirectBlock), 1, volumeFile);
+    fwrite(&tIndirectBlock, sizeof(tIndirectBlock), 1, volumeFile);
+    fwrite(&_lastBlockSize, sizeof(_lastBlockSize), 1, volumeFile);
 }
 
 blocknum_t* Inode::blockPtrWithNumber(unsigned int number) {
@@ -447,33 +423,76 @@ void Inode::setBlockPtr(blocknum_t blocknum, unsigned int withNumber) {
 bool Inode::writeData(FILE* fromFile) {
     char buffer[512];
     int i = 0;
-    size_t read = fread(buffer, 1, BLOCK_SIZE, fromFile);
-    while (read > 0) {
-        blocknum_t free = IOCS::sharedInstance->freeSpaceManager->getFreeBlock();
-        if (free.valid == INVALID) {
-            // Volume is full
-            return false;
-        }
-        IOCS::sharedInstance->freeSpaceManager->markBlock(free.block, false);
-        setBlockPtr(free, i++);
-        blocks++;
-        
-        if (free.block > 300) {
-            printf("a");
-        }
-        
-        fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(free.block*BLOCK_SIZE), SEEK_SET);
-        fwrite(buffer, 1, read, IOCS::sharedInstance->volumeFile);
-        
-        if (read < BLOCK_SIZE) {
-            char eof = '\0';
-            fwrite(&eof, 1, 1, IOCS::sharedInstance->volumeFile);
-        }
-        
+    size_t read;
+    blocknum_t free;
+    
+    do {
         read = fread(buffer, 1, BLOCK_SIZE, fromFile);
-    }
+        
+        if (read > 0) {
+            free = IOCS::sharedInstance->freeSpaceManager->getFreeBlock();
+            if (free.valid == INVALID) {
+                // Volume is full
+                return false;
+            }
+            IOCS::sharedInstance->freeSpaceManager->markBlock(free.block, false);
+            setBlockPtr(free, i++);
+            blocks++;
+            
+            fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(free.block*BLOCK_SIZE), SEEK_SET);
+            fwrite(buffer, 1, read, IOCS::sharedInstance->volumeFile);
+            
+            if (read < BLOCK_SIZE) {
+                _lastBlockSize = (int32_t)read;
+            }
+        }
+        
+    } while (read > 0);
+    write();
     
     return true;
+}
+
+void Inode::readData() {
+    char buffer[512];
+    int i = 0;
+    size_t read;
+    pid_t cPID;
+    
+    FILE* tmpfp;
+    char format[] = "/tmp/temp.XXXXXX";
+    const char *name = mktemp(format); // Get temp name
+    tmpfp = fopen(name, "w+");  // Create the file
+    
+    if (tmpfp != NULL) {
+        while (blockPtrWithNumber(i)->valid) {
+            fseek(IOCS::sharedInstance->volumeFile, DATA_OFFSET+(blockPtrWithNumber(i)->block*BLOCK_SIZE), SEEK_SET);
+            
+            if (i < blocks-1) {
+                read = fread(buffer, 1, BLOCK_SIZE, IOCS::sharedInstance->volumeFile); // Read from drive to buffer
+            } else {
+                // Last segement of data that may not be the full block size, write only used data
+                read = fread(buffer, 1, _lastBlockSize, IOCS::sharedInstance->volumeFile);
+            }
+            
+            if (read > 0) {
+                fwrite(buffer, 1, read, tmpfp); // Write from buffer to out file if able to read at least one byte
+            }
+            i++;
+        }
+        fflush(tmpfp);
+        
+        cPID = fork();
+        if (cPID == 0) {
+            execlp("more", "more", name, NULL); // execute more filter with readme file
+            perror("execlp"); // exec failed
+        } else {
+            waitpid(cPID, NULL, 0); // wait for process to complete
+        }
+        fclose(tmpfp);
+        remove(name);
+    }
+    
 }
 
 void Inode::deleteData(bool shouldDeleteEntry) {

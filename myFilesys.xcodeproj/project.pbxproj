@@ -10,7 +10,6 @@
 		7D7607791CAC2BC800EC001B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607781CAC2BC800EC001B /* main.cpp */; };
 		7D7607811CAC2BF900EC001B /* Inode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D76077F1CAC2BF900EC001B /* Inode.cpp */; };
 		7D7607851CAC348900EC001B /* IOCS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607831CAC348900EC001B /* IOCS.cpp */; };
-		7D7607881CAC59DF00EC001B /* DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607861CAC59DF00EC001B /* DataBlock.cpp */; };
 		7D76078B1CAC5C7700EC001B /* FSManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607891CAC5C7700EC001B /* FSManager.cpp */; };
 		7D7607911CAC616C00EC001B /* VCB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D76078F1CAC616C00EC001B /* VCB.cpp */; };
 		7D7607951CAC641100EC001B /* FreeBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7607931CAC641100EC001B /* FreeBlock.cpp */; };
@@ -39,8 +38,6 @@
 		7D7607821CAC2CDF00EC001B /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		7D7607831CAC348900EC001B /* IOCS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOCS.cpp; sourceTree = "<group>"; };
 		7D7607841CAC348900EC001B /* IOCS.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IOCS.hpp; sourceTree = "<group>"; };
-		7D7607861CAC59DF00EC001B /* DataBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataBlock.cpp; sourceTree = "<group>"; };
-		7D7607871CAC59DF00EC001B /* DataBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DataBlock.hpp; sourceTree = "<group>"; };
 		7D7607891CAC5C7700EC001B /* FSManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSManager.cpp; sourceTree = "<group>"; };
 		7D76078A1CAC5C7700EC001B /* FSManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FSManager.hpp; sourceTree = "<group>"; };
 		7D76078F1CAC616C00EC001B /* VCB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VCB.cpp; sourceTree = "<group>"; };
@@ -105,8 +102,6 @@
 				7D7607801CAC2BF900EC001B /* Inode.hpp */,
 				7D76078F1CAC616C00EC001B /* VCB.cpp */,
 				7D7607901CAC616C00EC001B /* VCB.hpp */,
-				7D7607861CAC59DF00EC001B /* DataBlock.cpp */,
-				7D7607871CAC59DF00EC001B /* DataBlock.hpp */,
 				7D7607931CAC641100EC001B /* FreeBlock.cpp */,
 				7D7607941CAC641100EC001B /* FreeBlock.hpp */,
 				7D7607961CAC675100EC001B /* IndirectBlock.cpp */,
@@ -174,7 +169,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7D7607851CAC348900EC001B /* IOCS.cpp in Sources */,
-				7D7607881CAC59DF00EC001B /* DataBlock.cpp in Sources */,
 				7D7607791CAC2BC800EC001B /* main.cpp in Sources */,
 				7D8B306D1CBD965E00ADECD2 /* CatalogFile.cpp in Sources */,
 				7D7607951CAC641100EC001B /* FreeBlock.cpp in Sources */,

@@ -20,9 +20,16 @@ IOCS::IOCS(){}
 IOCS *IOCS::sharedInstance = new IOCS();
 
 void IOCS::mount(std::string volumeName){
+    
+    // Already have a volume mounted, must unmount it.
+    if (volumeFile != NULL) {
+        unmount();
+    }
+    
     volumeFile = fopen(volumeName.c_str(), "rb+");
     if (volumeFile == NULL) {
-        std::cerr << "Unable to mount volume.";
+        std::cerr << "Unable to mount volume.\n";
+        return;
     }
     
     // Instantiate volume control block from file
@@ -40,18 +47,14 @@ void IOCS::mount(std::string volumeName){
     
     // Assign root directory inode
     rootDirInode = new Inode(volumeControlBlock->root.block);
-//    openFile("a.txt");
-    
-//    createDirectory("TestDir");
-    
-//    createFile("s.jpg");
-    
-//    openFile("/TestDir/s.txt");
 }
 
 // remove: size in blocks
 void IOCS::create(std::string volumeName, size_t size) {
     volumeFile = fopen(volumeName.c_str(), "wb+");
+    if (volumeFile == NULL) {
+        std::cerr << "ERROR: Unable to create volume.\n";
+    }
     
     // Create empty file (all zeros) of designated size
     FreeBlock fb;
@@ -89,27 +92,20 @@ void IOCS::create(std::string volumeName, size_t size) {
     volumeControlBlock->root.block = rootDirInode->number;
     volumeControlBlock->root.valid = VALID;
     volumeControlBlock->write();
-
-    // testing stuff
-//    blocknum_t free = fsManager.getFreeBlock();
-//    fsManager.markBlock(free.block, false);
-//    *rootDirInode.nextFreeBlockPtr() = free;
-//    DirentBlock dirent;
-    
-//    Inode test;
-//    catologFileInode->addInode(test, fsManager);
-//    dirent.block.block = 2;
-//    dirent.block.valid = VALID;
-//    strcpy(dirent.name, "tmp");
-//    test.write();
-//    dirent.write(free);
-//    rootDirInode.write();
-//
-//    
-//    FILE *fp = openFile("/tmp/user/a/k.out");
 }
 
 void IOCS::unmount() {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
+    std::map<std::string,Inode*>::const_iterator it;
+    
+    // Close all open files
+    for(it = fileTable.begin(); it != fileTable.end(); it++) {
+        closeFile(it->first);
+    }
+    
     fclose(volumeFile);
 }
 
@@ -119,14 +115,14 @@ std::vector<std::string> &tokenize(const std::string &s, char delim, std::vector
     while (std::getline(ss, item, delim)) {
         elems.push_back(item);
     }
-    if (elems.front().length()==0) {
+    if (elems.size() > 0 && elems.front().length()==0) {
         // if user starts path with "/", the first token is empty, so remove it
         elems.erase(elems.begin());
     }
     return elems;
 }
 
-FILE* IOCS::createFile(std::string path) {
+void IOCS::createFile(std::string path) {
     return createInode(path, false);
 }
 
@@ -138,7 +134,11 @@ void IOCS::createDirectory(std::string path) {
  * This function is used for both createFile() and createDirectory(), as these are logically the
  * same (besides a metadata variable) in my file system.
  */
-FILE* IOCS::createInode(std::string path, bool isDirectory) {
+void IOCS::createInode(std::string path, bool isDirectory) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
     Inode* currentInode = rootDirInode;
     DirentBlock* currentDirent = NULL;
     std::vector<std::string> tokens;
@@ -160,9 +160,12 @@ FILE* IOCS::createInode(std::string path, bool isDirectory) {
         }
         if (currentDirent == NULL) {
             // Unable to find a dirent with specified name
-            return NULL;
+            for (int k = 0; k <= i; k++) {
+                std::cout << "/" << tokens[k];
+            }
+            std::cout << " does not exist.\n";
+            return;
         }
-        currentDirent = NULL;
     }
     // Retrieved inode of directory
     
@@ -171,7 +174,8 @@ FILE* IOCS::createInode(std::string path, bool isDirectory) {
         if (strcmp(currentDirent->name, tokens[i].c_str()) == 0) {
             // current inode is a directory inode or the dirent's name matches the name of the new file
             // this is a directory, or a file with same name already exists in this directory, cannot create
-            return NULL;
+            std::cout << "Duplicate file name. Unable to create.\n";
+            return;
         }
     }
     
@@ -202,11 +206,13 @@ FILE* IOCS::createInode(std::string path, bool isDirectory) {
     dirent.write(freeBlock);
     
     newInode.write();
-    if (isDirectory) return NULL;
-    return NULL;//newInode.open(tokens.back());
 }
 
 FILE* IOCS::openFile(std::string path) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return NULL;
+    }
     Inode* currentInode = rootDirInode;
     DirentBlock* currentDirent = NULL;
     std::vector<std::string> tokens;
@@ -225,11 +231,16 @@ FILE* IOCS::openFile(std::string path) {
         }
         if (currentDirent == NULL) {
             // Unable to find a dirent with specified name
+            std::cout << path << " does not exist.\n";
             return NULL;
         }
-        currentDirent = NULL;
     }
     // Retrieved inode of file
+    
+    if (currentInode->isDir) {
+        std::cout << currentDirent->name << " is a directory.\n";
+        return NULL;
+    }
     
     // Insert key-value pair of file's path with its inode into open file table
     fileTable.insert(std::pair<std::string, Inode*>(path, currentInode));
@@ -238,6 +249,10 @@ FILE* IOCS::openFile(std::string path) {
 }
 
 void IOCS::closeFile(std::string path) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
     std::map<std::string,Inode*>::const_iterator it;
     it = fileTable.find(path);
  
@@ -245,17 +260,18 @@ void IOCS::closeFile(std::string path) {
         // The file with the specified path is not open
         std::cout << "The specified file is not open or does not exist.";
     } else {
-        Inode* inode = it->second;
+//        Inode* inode = it->second;
         std::string path = it->first;
         std::vector<std::string> tokens;
         tokenize(path, '/', tokens);
-        FILE* fp = fopen(tokens.back().c_str(), "r"); // Open the temp file previously made
+//        FILE* fp = fopen(tokens.back().c_str(), "r"); // Open the temp file previously made
         
-        if (fp != NULL) {
-            // Update file in myFileSys before closing
-            inode->writeData(fp);
-            fclose(fp);
-        }
+        // REMOVE: do you really want to update file before closing?
+//        if (fp != NULL) {
+//            // Update file in myFileSys before closing
+//            inode->writeData(fp);
+//            fclose(fp);
+//        }
         
         // Remove the file from the user's actual file system
         std::remove(tokens.back().c_str());
@@ -263,65 +279,146 @@ void IOCS::closeFile(std::string path) {
 }
 
 bool IOCS::writeFile(std::string sourcePath, std::string destPath) {
-    Inode* currentInode = rootDirInode;
-    DirentBlock* currentDirent = NULL;
-    std::vector<std::string> sourceTokens, destTokens;
-    tokenize(destPath, '/', destTokens);
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return false;
+    }
+    std::map<std::string,Inode*>::const_iterator it;
+    it = fileTable.find(destPath);
     
-    FILE* fp = fopen(sourcePath.c_str(), "r");
-    if (fp) {
-        
-        for (int i=0; i < destTokens.size(); i++) {
-            for (int j=0; currentInode->blockPtrWithNumber(j)->valid; j++) {
-                currentDirent = new DirentBlock(currentInode->blockPtrWithNumber(j)->block);
-                if (strcmp(currentDirent->name, destTokens[i].c_str()) == 0) {
-                    // dirent's name matches token
-                    // get the inode number of the next directory/file from the dirent
-                    currentInode = new Inode(currentDirent->block.block);
-                    break;
-                }
-                currentDirent = NULL;
-            }
-            if (currentDirent == NULL) {
-                // Unable to find a dirent with specified name
-                return NULL;
-            }
-            currentDirent = NULL;
-        }
-        // Retrieved inode of file
-        
-        if (currentInode != NULL) {
-            currentInode->writeData(fp);
+    if (it != fileTable.end()) {
+        FILE* fp = fopen(sourcePath.c_str(), "r");
+        if (fp) {
+            Inode* inode = it->second;
+            std::string path = it->first;
+            std::vector<std::string> tokens;
+            tokenize(path, '/', tokens);
+            
+            inode->deleteData(false);
+            inode->writeData(fp);
+            inode->open(tokens.back()); // update user-facing file
             return true;
         }
+        
     }
     
-    
+    // The file with the specified path is not open
+    std::cout << "The specified file is not open or does not exist.\n";
     return false;
 }
 
+void IOCS::readFile(std::string path) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
+    std::map<std::string,Inode*>::const_iterator it;
+    it = fileTable.find(path);
+    
+    if (it != fileTable.end()) {
+        Inode* inode = it->second;
+        inode->readData();
+    } else {
+        // The file with the specified path is not open
+        std::cout << "The specified file is not open or does not exist.\n";
+    }
+}
 
-void IOCS::deleteFile(std::string path) {
-    Inode* currentInode = rootDirInode;
+void IOCS::deleteFile(std::string path, Inode* dirInode) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
+    Inode* currentInode = dirInode==NULL ? rootDirInode : dirInode; // start with provided inode if provided
+    int blocknum = 0;
     DirentBlock* currentDirent = NULL;
     std::vector<std::string> tokens;
     tokenize(path, '/', tokens);
     
     // Go to dirent's directory inode
     for (int i=0; i < tokens.size(); i++) {
+        for (int j=0; j < currentInode->blocks; j++) {
+            if (currentInode->blockPtrWithNumber(j)->valid) {
+                currentDirent = new DirentBlock(currentInode->blockPtrWithNumber(j)->block);
+                if (strcmp(currentDirent->name, tokens[i].c_str()) == 0) {
+                    // dirent's name matches token
+                    // get the inode number of the next directory/file from the dirent
+                    
+                    // Obtained dirent of file to be deleted
+                    if (currentDirent->name == tokens.back()) {
+                        // Save the inode of the directory that contains it
+                        dirInode = currentInode;
+                        // Save its block number in directory
+                        blocknum = j;
+                    }
+                    
+                    // Get the inode of the file to be deleted
+                    currentInode = new Inode(currentDirent->block.block);
+                    break;
+                }
+                currentDirent = NULL;
+            }
+        }
+        if (currentDirent == NULL) {
+            // Unable to find a dirent with specified name
+            std::cout << "File does not exist.\n";
+            return;
+        }
+        
+    }
+    // Retrieved inode of file
+    
+    // If deleting a directory, delete its subcontents
+    if (currentInode->isDir) {
+        DirentBlock* cDirent;
+        Inode inode = *currentInode;
+        for (int i = 0; currentInode->blockPtrWithNumber(i)->valid; i++) {
+            cDirent = new DirentBlock(currentInode->blockPtrWithNumber(i)->block);
+            deleteFile(cDirent->name, &inode);
+        }
+    }
+    
+    // Mark dirent for deletion
+    dirInode->blockPtrWithNumber(blocknum)->valid = INVALID;
+    dirInode->blocks--;
+    dirInode->write();
+    freeSpaceManager->markBlock(dirInode->blockPtrWithNumber(blocknum)->block, true);
+    
+    // Decrement number of links to file. If zero, delete inode and its data
+    if (--(currentInode->links) == 0) {
+        catalogFileInode->deleteInode(*currentInode, *freeSpaceManager);
+        
+        std::map<std::string,Inode*>::const_iterator it;
+        it = fileTable.find(path);
+        
+        if (it != fileTable.end()) {
+            // The file with the specified path is open
+            // Remove the file from the user's actual file system
+            std::remove(tokens.back().c_str());
+        }
+        
+    } else {
+        currentInode->write(); // Update link count
+    }
+    
+}
+
+void IOCS::list(std::string path) {
+    if (volumeFile == NULL) {
+        std::cout << "No mounted volume. Create or mount a volume to continue.\n";
+        return;
+    }
+    Inode* currentInode = rootDirInode;
+    DirentBlock* currentDirent = NULL;
+    std::vector<std::string> tokens;
+    tokenize(path, '/', tokens);
+    
+    for (int i=0; i < tokens.size(); i++) {
         for (int j=0; currentInode->blockPtrWithNumber(j)->valid; j++) {
             currentDirent = new DirentBlock(currentInode->blockPtrWithNumber(j)->block);
             if (strcmp(currentDirent->name, tokens[i].c_str()) == 0) {
                 // dirent's name matches token
                 // get the inode number of the next directory/file from the dirent
-                
-                // Mark dirent for deletion
-                currentInode->blockPtrWithNumber(j)->valid = INVALID;
-                currentInode->blocks--;
-                currentInode->write();
-                freeSpaceManager->markBlock(currentInode->blockPtrWithNumber(j)->block, true);
-                
-                // Get the inode of the file to be deleted
                 currentInode = new Inode(currentDirent->block.block);
                 break;
             }
@@ -329,17 +426,20 @@ void IOCS::deleteFile(std::string path) {
         }
         if (currentDirent == NULL) {
             // Unable to find a dirent with specified name
+            std::cout << path << " does not exist.\n";
             return;
         }
-        
     }
     // Retrieved inode of file
     
-    // Decrement number of links to file. If zero, delete inode and its data
-    if (--(currentInode->links) == 0) {
-        catalogFileInode->deleteInode(*currentInode, *freeSpaceManager);
-    } else {
-        currentInode->write(); // Update link count
+    if (!currentInode->isDir) {
+        std::cout << currentDirent->name << " is a file.\n";
+        return;
     }
     
+    for (int i = 0; currentInode->blockPtrWithNumber(i)->valid; i++) {
+        currentDirent = new DirentBlock(currentInode->blockPtrWithNumber(i)->block);
+        std::cout << "\t" << currentDirent->name;
+    }
+    std::cout << "\n";
 }
