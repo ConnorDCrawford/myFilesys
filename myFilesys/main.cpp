@@ -6,10 +6,10 @@
 //  Copyright © 2016 Connor Crawford. All rights reserved.
 //
 
-#include <iostream>
 #include <vector>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include "IOCS.hpp"
 
 void shell();
@@ -141,7 +141,7 @@ void mount(std::vector<std::string> args) {
     if (args.size() >= 2) {
         IOCS::sharedInstance->mount(args[1]);
     } else {
-        std::cout << "Expected 2 arguments. Recieved " << args.size()-1 << ".\n";
+        std::cout << "Expected 1 arguments. Recieved " << args.size()-1 << ".\n";
     }
 }
 

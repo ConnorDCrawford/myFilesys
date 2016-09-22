@@ -7,16 +7,18 @@
 //
 
 #include <unistd.h>
+#include <sys/wait.h>
 #include "Inode.hpp"
 #include "IOCS.hpp"
 
 Inode::Inode():
-cTime(std::time_t(nullptr)),
-mTime(cTime),
-aTime(cTime),
+number(0),
 links(0),
 blocks(0),
-isDir(false)
+isDir(false),
+cTime(time(0)),
+mTime(time(0)),
+aTime(time(0))
 {}
 
 Inode::Inode(unsigned int number) {
@@ -66,9 +68,6 @@ FILE* Inode::open(std::string name) {
         }
         i++;
         
-    }
-    if (i == 0) {
-        return NULL;
     }
     
     fflush(outFile);

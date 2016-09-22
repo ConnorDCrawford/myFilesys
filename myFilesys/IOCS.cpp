@@ -107,6 +107,7 @@ void IOCS::unmount() {
     }
     
     fclose(volumeFile);
+    volumeFile = NULL;
 }
 
 std::vector<std::string> &tokenize(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -283,6 +284,7 @@ bool IOCS::writeFile(std::string sourcePath, std::string destPath) {
         std::cout << "No mounted volume. Create or mount a volume to continue.\n";
         return false;
     }
+    
     std::map<std::string,Inode*>::const_iterator it;
     it = fileTable.find(destPath);
     
@@ -300,6 +302,17 @@ bool IOCS::writeFile(std::string sourcePath, std::string destPath) {
             return true;
         }
         
+    }
+    
+    // Destination file is not open, attempt to open it
+    if (openFile(destPath) != NULL) {
+        return writeFile(sourcePath, destPath);
+    } else {
+        // Destination file does not yet exist, attempt to create it
+        createFile(destPath);
+        if (openFile(destPath) != NULL) {
+            return writeFile(sourcePath, destPath);
+        }
     }
     
     // The file with the specified path is not open
@@ -334,6 +347,8 @@ void IOCS::deleteFile(std::string path, Inode* dirInode) {
     DirentBlock* currentDirent = NULL;
     std::vector<std::string> tokens;
     tokenize(path, '/', tokens);
+    
+    closeFile(path);
     
     // Go to dirent's directory inode
     for (int i=0; i < tokens.size(); i++) {

@@ -6,6 +6,7 @@
 //  Copyright © 2016 Connor Crawford. All rights reserved.
 //
 
+#include <string.h>
 #include "VCB.hpp"
 #include "IOCS.hpp"
 
